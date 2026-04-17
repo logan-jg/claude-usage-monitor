@@ -79,8 +79,11 @@ struct PopoverView: View {
             // First ever open — let the initial makeNSView load do its thing.
             return false
         }
-        if url.contains("/settings/usage") { return false }
+        // Never interrupt a login/OAuth flow mid-form.
         if Self.preserveURLSubstrings.contains(where: url.contains) { return false }
+        // Reload every other claude.ai page, INCLUDING /settings/usage itself —
+        // the page doesn't auto-refresh its numbers, so without this the sampler
+        // keeps reading the same stale DOM values indefinitely.
         return url.contains("claude.ai")
     }
 

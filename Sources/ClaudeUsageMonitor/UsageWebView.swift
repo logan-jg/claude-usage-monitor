@@ -91,8 +91,52 @@ struct UsageWebView: NSViewRepresentable {
         weak var webView: WKWebView?
         var lastReloadTrigger = 0
 
+        /// One-shot guard so the alert doesn't fire again for the same button click
+        /// while we cancel and subsequent redirects flush through.
+        private var googleAlertShownAt: Date?
+
         init(_ parent: UsageWebView) {
             self.parent = parent
+        }
+
+        /// Intercept Google Identity Services navigations. Google policy blocks
+        /// its sign-in flow inside embedded WebViews for security reasons, and
+        /// there's no reasonable workaround — the user must switch to Claude's
+        /// email-code login. Cancel the navigation and surface an alert so they
+        /// know why it didn't work.
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationAction: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
+            if let url = navigationAction.request.url,
+               let host = url.host?.lowercased(),
+               host == "accounts.google.com" || host.hasSuffix(".accounts.google.com") {
+                decisionHandler(.cancel)
+                // Throttle: only one alert per 3 seconds so rapid redirect chains
+                // don't stack dialogs on top of each other.
+                let now = Date()
+                if let last = googleAlertShownAt, now.timeIntervalSince(last) < 3 {
+                    return
+                }
+                googleAlertShownAt = now
+                Task { @MainActor in
+                    self.showGoogleBlockedAlert()
+                }
+                return
+            }
+            decisionHandler(.allow)
+        }
+
+        @MainActor
+        private func showGoogleBlockedAlert() {
+            let s = AppLanguage.current.strings
+            let alert = NSAlert()
+            alert.messageText = s.googleBlockedTitle
+            alert.informativeText = s.googleBlockedBody
+            alert.alertStyle = .warning
+            alert.addButton(withTitle: s.googleBlockedOK)
+            alert.runModal()
         }
 
         func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {

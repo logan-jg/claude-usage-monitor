@@ -62,6 +62,11 @@ struct Strings {
     let notifScope5h: String
     let notifScope7d: String
     let notifCurrentPct: (Int) -> String           // argument: current %
+
+    // Google sign-in block
+    let googleBlockedTitle: String
+    let googleBlockedBody: String
+    let googleBlockedOK: String
 }
 
 extension AppLanguage {
@@ -122,7 +127,11 @@ extension Strings {
         notifThresholdTitle: { pct in "Claude 사용량 \(pct)% 도달" },
         notifScope5h: "5h 세션",
         notifScope7d: "7d 주간",
-        notifCurrentPct: { pct in "현재 \(pct)%" }
+        notifCurrentPct: { pct in "현재 \(pct)%" },
+
+        googleBlockedTitle: "Google 로그인은 지원되지 않습니다",
+        googleBlockedBody: "Google 정책으로 macOS 앱 내부 WebView 에서의 Google 로그인이 차단되어 있습니다.\n\nClaude 로그인 화면에서 \"이메일로 계속하기\" 를 선택해 이메일 인증 코드로 로그인해주세요.",
+        googleBlockedOK: "확인"
     )
 
     static let english = Strings(
@@ -172,7 +181,11 @@ extension Strings {
         notifThresholdTitle: { pct in "Claude usage at \(pct)%" },
         notifScope5h: "5h session",
         notifScope7d: "7d weekly",
-        notifCurrentPct: { pct in "now at \(pct)%" }
+        notifCurrentPct: { pct in "now at \(pct)%" },
+
+        googleBlockedTitle: "Sign in with Google isn't supported here",
+        googleBlockedBody: "Google's policy blocks its sign-in flow inside embedded WebViews for security reasons.\n\nOn the Claude sign-in screen, please choose \"Continue with email\" and log in with an email verification code instead.",
+        googleBlockedOK: "OK"
     )
 
     static let japanese = Strings(
@@ -222,7 +235,11 @@ extension Strings {
         notifThresholdTitle: { pct in "Claude 使用量 \(pct)% に到達" },
         notifScope5h: "5h セッション",
         notifScope7d: "7d 週間",
-        notifCurrentPct: { pct in "現在 \(pct)%" }
+        notifCurrentPct: { pct in "現在 \(pct)%" },
+
+        googleBlockedTitle: "Google ログインはご利用いただけません",
+        googleBlockedBody: "Google のポリシーにより、組み込み WebView 内での Google ログインはブロックされています。\n\nClaude のログイン画面で「メールで続行」を選択し、メール認証コードでログインしてください。",
+        googleBlockedOK: "OK"
     )
 }
 
