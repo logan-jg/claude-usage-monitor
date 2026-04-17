@@ -13,6 +13,7 @@ struct UsageWebView: NSViewRepresentable {
     @Binding var reloadTrigger: Int
     @Binding var isLoading: Bool
     @Binding var isAuthBlocked: Bool
+    @Binding var currentURL: String?
     let onWebViewReady: (WKWebView) -> Void
 
     func makeCoordinator() -> Coordinator {
@@ -102,6 +103,7 @@ struct UsageWebView: NSViewRepresentable {
             Task { @MainActor in
                 parent.isLoading = false
                 parent.isAuthBlocked = false
+                parent.currentURL = webView.url?.absoluteString
             }
         }
 

@@ -9,8 +9,21 @@ struct PopoverView: View {
     @State private var isLoading = false
     @State private var isAuthBlocked = false
     @State private var showSettings = false
+    @State private var currentURL: String?
 
     private var s: Strings { lang.strings }
+
+    /// Paths we must NOT interrupt by force-reloading /settings/usage when the
+    /// popover reopens. If the user is in the middle of login/OAuth and clicks
+    /// away to copy a verification code from their mail client, snapping the
+    /// webview back to /settings/usage would kick them to /login and wipe
+    /// the email-code form.
+    private static let preserveURLSubstrings = [
+        "/login", "/oauth", "/auth", "/magic", "/verify",
+        "/signin", "/sign-in", "/sso",
+        // Also hosts we bounce through during SSO
+        "anthropic.com/oauth", "accounts.google.com", "appleid.apple.com"
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +37,7 @@ struct PopoverView: View {
                     reloadTrigger: $reloadTrigger,
                     isLoading: $isLoading,
                     isAuthBlocked: $isAuthBlocked,
+                    currentURL: $currentURL,
                     onWebViewReady: { sampler.attach($0) }
                 )
                 .opacity(showSettings ? 0 : 1)
@@ -46,12 +60,28 @@ struct PopoverView: View {
         }
         .frame(width: 560, height: 720)
         .onAppear {
-            reloadTrigger &+= 1
             sampler.setPopoverOpen(true)
+            // Only snap back to /settings/usage when the webview has wandered to
+            // something that is clearly NOT the usage page and NOT a login flow.
+            // During sign-in we leave the webview alone so stepping away to grab
+            // a verification code doesn't reset the session.
+            if shouldForceReloadOnAppear() {
+                reloadTrigger &+= 1
+            }
         }
         .onDisappear {
             sampler.setPopoverOpen(false)
         }
+    }
+
+    private func shouldForceReloadOnAppear() -> Bool {
+        guard let url = currentURL else {
+            // First ever open — let the initial makeNSView load do its thing.
+            return false
+        }
+        if url.contains("/settings/usage") { return false }
+        if Self.preserveURLSubstrings.contains(where: url.contains) { return false }
+        return url.contains("claude.ai")
     }
 
     private var header: some View {
