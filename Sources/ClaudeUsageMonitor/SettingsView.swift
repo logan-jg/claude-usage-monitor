@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var sampler: UsageSampler
+    @Environment(\.appLanguage) private var lang
 
     @AppStorage("thresholds5h") private var thresholds5hData: Data = try! JSONEncoder().encode([75, 90])
     @AppStorage("thresholds7d") private var thresholds7dData: Data = try! JSONEncoder().encode([80])
@@ -10,15 +11,21 @@ struct SettingsView: View {
     @State private var notificationState: NotificationManager.AuthorizationState = .notDetermined
     @State private var launchAtLogin: Bool = LaunchAtLogin.isEnabled
 
+    @AppStorage(AppLanguage.storageKey) private var languageRaw: String = AppLanguage.default.rawValue
+    @State private var initialLanguageRaw: String = AppLanguage.current.rawValue
+
     private let candidates5h = [50, 60, 70, 75, 80, 85, 90, 95]
     private let candidates7d = [50, 60, 70, 80, 85, 90, 95]
-    private let pollIntervals: [(label: String, seconds: Double)] = [
-        ("1분", 60), ("5분", 300), ("15분", 900)
-    ]
+
+    private var s: Strings { lang.strings }
+
+    private var pollIntervals: [(label: String, seconds: Double)] {
+        [(s.pollMin1, 60), (s.pollMin5, 300), (s.pollMin15, 900)]
+    }
 
     var body: some View {
         Form {
-            Section("알림 권한") {
+            Section(s.settingsNotificationsHeader) {
                 HStack(spacing: 10) {
                     Image(systemName: permissionIcon)
                         .foregroundStyle(permissionColor)
@@ -27,14 +34,14 @@ struct SettingsView: View {
                     Spacer()
                     switch notificationState {
                     case .notDetermined:
-                        Button("허용 요청") {
+                        Button(s.settingsNotificationsRequestButton) {
                             Task {
                                 _ = await NotificationManager.shared.requestPermission()
                                 notificationState = NotificationManager.shared.state
                             }
                         }
                     case .denied:
-                        Button("시스템 설정 열기") {
+                        Button(s.settingsNotificationsOpenSystemButton) {
                             NotificationManager.shared.openSystemNotificationSettings()
                         }
                     case .authorized:
@@ -48,11 +55,11 @@ struct SettingsView: View {
                     candidates: candidates5h,
                     selected: thresholds5hBinding
                 )
-                Text("5h 세션이 지정한 % 에 도달하면 알림. 같은 세션 안에서는 한 번만.")
+                Text(s.settings5hThresholdsCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } header: {
-                Text("5h 세션 임계치")
+                Text(s.settings5hThresholdsHeader)
             }
 
             Section {
@@ -60,40 +67,66 @@ struct SettingsView: View {
                     candidates: candidates7d,
                     selected: thresholds7dBinding
                 )
-                Text("7d 주간 한도 임계치. 주간 리셋 전까지 한 번만.")
+                Text(s.settings7dThresholdsCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } header: {
-                Text("7d 주간 임계치")
+                Text(s.settings7dThresholdsHeader)
             }
 
-            Section("시스템") {
-                Toggle("로그인 시 자동 시작", isOn: $launchAtLogin)
+            Section(s.settingsSystemHeader) {
+                Toggle(s.settingsLaunchAtLogin, isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, newValue in
                         let ok = LaunchAtLogin.setEnabled(newValue)
                         if !ok { launchAtLogin = LaunchAtLogin.isEnabled }
                     }
                 if LaunchAtLogin.requiresApproval {
-                    Text("시스템 설정 → 로그인 항목에서 이 앱을 허용해주세요.")
+                    Text(s.settingsLaunchAtLoginRequiresApproval)
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
             }
 
-            Section("폴링 주기") {
-                Picker("팝오버 열려있을 때", selection: $pollIntervalSeconds) {
+            Section(s.settingsPollingHeader) {
+                Picker(s.settingsPollingLabel, selection: $pollIntervalSeconds) {
                     ForEach(pollIntervals, id: \.seconds) { option in
                         Text(option.label).tag(option.seconds)
                     }
                 }
                 .pickerStyle(.segmented)
-                Text("팝오버가 닫혀있을 때는 이 간격의 3배마다 폴링합니다.")
+                Text(s.settingsPollingCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
-            Section("About") {
-                Text("이 앱은 claude.ai/settings/usage 를 WebView 로 읽어 공식 % 값을 그대로 표시합니다. 수치는 Anthropic 서버 기준으로 항상 정확합니다.")
+            Section(s.settingsLanguageHeader) {
+                Picker(s.settingsLanguageLabel, selection: $languageRaw) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.displayName).tag(language.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                if languageRaw != initialLanguageRaw {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.clockwise.circle.fill")
+                            .foregroundStyle(.orange)
+                        Text(s.settingsLanguageRestartWarning)
+                            .font(.caption)
+                        Spacer()
+                        Button(s.settingsLanguageRestartButton) {
+                            restartApp()
+                        }
+                        .controlSize(.small)
+                    }
+                } else {
+                    Text(s.settingsLanguageCaption)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Section(s.settingsAboutHeader) {
+                Text(s.settingsAboutCaption)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -103,6 +136,17 @@ struct SettingsView: View {
             await NotificationManager.shared.refreshState()
             notificationState = NotificationManager.shared.state
         }
+    }
+
+    /// Re-launch the app via `open -n` so the new AppleLanguages takes effect.
+    /// We detach the relauncher so it outlives this process.
+    private func restartApp() {
+        let bundlePath = Bundle.main.bundlePath
+        let task = Process()
+        task.launchPath = "/bin/sh"
+        task.arguments = ["-c", "sleep 0.5 && open -n \"\(bundlePath)\""]
+        try? task.run()
+        NSApp.terminate(nil)
     }
 
     private func thresholdChips(candidates: [Int], selected: Binding<Set<Int>>) -> some View {
@@ -168,9 +212,9 @@ struct SettingsView: View {
     }
     private var permissionText: String {
         switch notificationState {
-        case .authorized: return "알림이 켜져 있습니다."
-        case .denied: return "알림이 차단됐습니다. 시스템 설정에서 허용해주세요."
-        case .notDetermined: return "알림 권한을 요청해주세요."
+        case .authorized: return s.settingsNotificationsAuthorized
+        case .denied: return s.settingsNotificationsDenied
+        case .notDetermined: return s.settingsNotificationsNotDetermined
         }
     }
 }

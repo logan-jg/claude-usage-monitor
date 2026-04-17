@@ -3,11 +3,14 @@ import WebKit
 
 struct PopoverView: View {
     @Bindable var sampler: UsageSampler
+    @Environment(\.appLanguage) private var lang
 
     @State private var reloadTrigger = 0
     @State private var isLoading = false
     @State private var isAuthBlocked = false
     @State private var showSettings = false
+
+    private var s: Strings { lang.strings }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -56,7 +59,7 @@ struct PopoverView: View {
             Image(systemName: statusIcon)
                 .font(.title3)
                 .foregroundStyle(statusIconColor)
-            Text(showSettings ? "설정" : "Claude Usage")
+            Text(showSettings ? s.popoverTitleSettings : s.popoverTitleUsage)
                 .font(.headline)
             if isLoading && !showSettings {
                 ProgressView()
@@ -72,7 +75,7 @@ struct PopoverView: View {
                     Image(systemName: "arrow.clockwise")
                 }
                 .buttonStyle(.borderless)
-                .help("새로고침")
+                .help(s.reloadHelp)
                 .disabled(isLoading)
             }
 
@@ -82,16 +85,16 @@ struct PopoverView: View {
                 }
             } label: {
                 if showSettings {
-                    Label("뒤로", systemImage: "chevron.left")
+                    Label(s.backButton, systemImage: "chevron.left")
                 } else {
-                    Label("설정", systemImage: "gearshape")
+                    Label(s.settingsButton, systemImage: "gearshape")
                 }
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
 
             Menu {
-                Button("Claude Usage 종료", action: { NSApplication.shared.terminate(nil) })
+                Button(s.quitMenu, action: { NSApplication.shared.terminate(nil) })
             } label: {
                 Image(systemName: "ellipsis.circle")
             }
@@ -111,19 +114,19 @@ struct PopoverView: View {
             statusBanner(
                 color: .orange,
                 icon: "exclamationmark.triangle.fill",
-                text: "로그인이 필요하거나 리디렉션이 막혔습니다. 위쪽 WebView에서 로그인해주세요."
+                text: s.statusAuthRequired
             )
         case .parseError(let detail):
             statusBanner(
                 color: .red,
                 icon: "xmark.octagon.fill",
-                text: "수치를 읽지 못했습니다 — claude.ai UI 변경 가능성. (\(detail.prefix(60)))"
+                text: s.statusParseError(String(detail.prefix(60)))
             )
         case .network(let detail):
             statusBanner(
                 color: .orange,
                 icon: "wifi.exclamationmark",
-                text: "네트워크 오류: \(detail.prefix(80))"
+                text: s.statusNetwork(String(detail.prefix(80)))
             )
         default:
             EmptyView()

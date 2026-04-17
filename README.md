@@ -22,9 +22,23 @@ If you're on Claude Pro / Max and push against your 5-hour session or 7-day week
 
 1. Download the latest `ClaudeUsageMonitor-<version>.zip` from the [Releases](https://github.com/logan-jg/claude-usage-monitor/releases) page
 2. Unzip → drag `ClaudeUsageMonitor.app` to `/Applications`
-3. **First launch**: since the app isn't signed with an Apple Developer ID, Gatekeeper will refuse a normal double-click. Work around it once with either:
-   - **Recommended:** right-click the app → `열기` / `Open` → confirm the warning
-   - Or from the Terminal: `xattr -dr com.apple.quarantine /Applications/ClaudeUsageMonitor.app`
+3. **First launch** (Gatekeeper workaround — the app is ad-hoc signed, not notarized):
+
+   **Quickest — Terminal (works on every macOS version):**
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/ClaudeUsageMonitor.app
+   ```
+   Then double-click normally.
+
+   **macOS 15 Sequoia or later, GUI path:**
+   - Double-click the app. You'll see **"ClaudeUsageMonitor'을(를) 열지 않음"** / *"Apple could not verify…"*. Click **완료 / Done** (do **not** click 휴지통으로 이동 / Move to Trash).
+   - Open **시스템 설정 → 개인정보 보호 및 보안** (System Settings → Privacy & Security).
+   - Scroll to the bottom. You'll see a row for *"ClaudeUsageMonitor은(는) 확인되지 않은 개발자가 배포했기 때문에 차단되었습니다"*.
+   - Click **그래도 열기 / Open Anyway**. Authenticate with Touch ID / password.
+   - Re-launch the app; a second prompt appears — click **열기 / Open**.
+
+   **macOS 14 and earlier:**
+   - Right-click the app → **열기 / Open** → confirm the "unverified developer" warning.
 4. A gauge icon appears in your menu bar. Click it → log in to Claude once inside the embedded WebView. You're done — cookies persist across relaunches.
 
 ## Using the app

@@ -222,9 +222,10 @@ final class UsageSampler {
     }
 
     private func fireThresholdNotification(scope: Scope, threshold: Int, reading: UsageReading, bucket: String) {
-        let scopeLabel = scope == .session ? "5h 세션" : "7d 주간"
-        let title = "Claude 사용량 \(threshold)% 도달"
-        var body = "\(scopeLabel) · 현재 \(reading.percent)%"
+        let s = AppLanguage.current.strings
+        let scopeLabel = scope == .session ? s.notifScope5h : s.notifScope7d
+        let title = s.notifThresholdTitle(threshold)
+        var body = "\(scopeLabel) · \(s.notifCurrentPct(reading.percent))"
         if let r = reading.resetLabel {
             body += " · \(r)"
         }

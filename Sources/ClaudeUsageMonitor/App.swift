@@ -4,10 +4,20 @@ import SwiftUI
 @main
 struct ClaudeUsageApp: App {
     @State private var sampler = UsageSampler()
+    @AppStorage(AppLanguage.storageKey) private var languageRaw: String = AppLanguage.default.rawValue
+
+    init() {
+        AppLanguage.applyAtLaunch()
+    }
+
+    private var currentLanguage: AppLanguage {
+        AppLanguage(rawValue: languageRaw) ?? .default
+    }
 
     var body: some Scene {
         MenuBarExtra {
             PopoverView(sampler: sampler)
+                .environment(\.appLanguage, currentLanguage)
         } label: {
             MenuBarIcon(sampler: sampler)
         }
