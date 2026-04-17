@@ -3,6 +3,7 @@ import WebKit
 
 struct PopoverView: View {
     @Bindable var sampler: UsageSampler
+    @Bindable var updater: UpdaterManager
     @Environment(\.appLanguage) private var lang
 
     @State private var reloadTrigger = 0
@@ -127,6 +128,11 @@ struct PopoverView: View {
             .controlSize(.small)
 
             Menu {
+                Button(s.checkForUpdates) {
+                    updater.checkForUpdates()
+                }
+                .disabled(!updater.canCheckForUpdates)
+                Divider()
                 Button(s.quitMenu, action: { NSApplication.shared.terminate(nil) })
             } label: {
                 Image(systemName: "ellipsis.circle")

@@ -13,6 +13,7 @@ struct Strings {
     let settingsButton: String
     let backButton: String
     let quitMenu: String
+    let checkForUpdates: String
 
     // Status banners
     let statusAuthRequired: String
@@ -87,6 +88,7 @@ extension Strings {
         settingsButton: "설정",
         backButton: "뒤로",
         quitMenu: "Claude Usage 종료",
+        checkForUpdates: "업데이트 확인…",
 
         statusAuthRequired: "로그인이 필요하거나 리디렉션이 막혔습니다. 위쪽 WebView에서 로그인해주세요.",
         statusParseError: { detail in "수치를 읽지 못했습니다 — claude.ai UI 변경 가능성. (\(detail))" },
@@ -141,6 +143,7 @@ extension Strings {
         settingsButton: "Settings",
         backButton: "Back",
         quitMenu: "Quit Claude Usage",
+        checkForUpdates: "Check for Updates…",
 
         statusAuthRequired: "You're signed out or a redirect was blocked. Please sign in inside the WebView above.",
         statusParseError: { detail in "Couldn't read the numbers — claude.ai UI may have changed. (\(detail))" },
@@ -195,6 +198,7 @@ extension Strings {
         settingsButton: "設定",
         backButton: "戻る",
         quitMenu: "Claude Usage を終了",
+        checkForUpdates: "アップデートを確認…",
 
         statusAuthRequired: "サインインが必要か、リダイレクトがブロックされました。上部の WebView でログインしてください。",
         statusParseError: { detail in "数値を読み取れませんでした — claude.ai の UI が変更された可能性があります。(\(detail))" },

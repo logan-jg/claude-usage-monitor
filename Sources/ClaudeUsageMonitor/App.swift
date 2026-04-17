@@ -4,6 +4,7 @@ import SwiftUI
 @main
 struct ClaudeUsageApp: App {
     @State private var sampler = UsageSampler()
+    @State private var updater = UpdaterManager()
     @AppStorage(AppLanguage.storageKey) private var languageRaw: String = AppLanguage.default.rawValue
 
     init() {
@@ -16,7 +17,7 @@ struct ClaudeUsageApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            PopoverView(sampler: sampler)
+            PopoverView(sampler: sampler, updater: updater)
                 .environment(\.appLanguage, currentLanguage)
         } label: {
             MenuBarIcon(sampler: sampler)

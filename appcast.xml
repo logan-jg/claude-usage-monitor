@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Claude Usage Monitor</title>
+    <link>https://github.com/logan-jg/claude-usage-monitor</link>
+    <description>Automatic update feed for Claude Usage Monitor.</description>
+    <language>en</language>
+
+    <item>
+      <title>v0.3.0 — Sparkle auto-update, Google sign-in warning</title>
+      <pubDate>Sat, 18 Apr 2026 00:30:00 +0000</pubDate>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[
+        <ul>
+          <li>Built-in automatic update (powered by Sparkle). Future releases will update on their own.</li>
+          <li>Clearer warning when users try Google sign-in (blocked by Google policy inside embedded WebViews).</li>
+          <li>Usage page refreshes every time the popover reopens.</li>
+        </ul>
+      ]]></description>
+      <enclosure
+        url="https://github.com/logan-jg/claude-usage-monitor/releases/download/v0.3.0/ClaudeUsageMonitor-0.3.0.zip"
+        sparkle:version="3"
+        sparkle:shortVersionString="0.3.0"
+        length="1191498"
+        type="application/octet-stream"
+        sparkle:edSignature="47J2nPHNxmQUFUi94RsF8YPNhRUPji5hR13URhUzmaCKkaR3tSnsKnTaqyECgQ5xFBpuSS4AkCziVMHzoKXlDw==" />
+    </item>
+  </channel>
+</rss>
