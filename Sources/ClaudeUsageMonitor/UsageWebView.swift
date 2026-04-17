@@ -105,6 +105,21 @@ struct UsageWebView: NSViewRepresentable {
                 parent.isAuthBlocked = false
                 parent.currentURL = webView.url?.absoluteString
             }
+            // After login completes, claude.ai redirects to /new (chat homepage).
+            // Bring it back to /settings/usage once the page settles — unless
+            // we're still inside an auth flow or already on the usage page.
+            if let url = webView.url,
+               url.host == "claude.ai",
+               !url.path.hasPrefix("/settings/usage") {
+                let authPaths = [
+                    "/login", "/oauth", "/auth", "/magic",
+                    "/verify", "/signin", "/sign-in", "/sso"
+                ]
+                let isAuth = authPaths.contains(where: { url.path.hasPrefix($0) })
+                if !isAuth {
+                    webView.load(URLRequest(url: UsageWebView.targetURL))
+                }
+            }
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
