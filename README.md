@@ -20,7 +20,7 @@ If you're on Claude Pro / Max and push against your 5-hour session or 7-day week
 
 ## Install
 
-1. Download the latest `ClaudeUsageMonitor-<version>.zip` from the [Releases](#) page
+1. Download the latest `ClaudeUsageMonitor-<version>.zip` from the [Releases](https://github.com/logan-jg/claude-usage-monitor/releases) page
 2. Unzip → drag `ClaudeUsageMonitor.app` to `/Applications`
 3. **First launch**: since the app isn't signed with an Apple Developer ID, Gatekeeper will refuse a normal double-click. Work around it once with either:
    - **Recommended:** right-click the app → `열기` / `Open` → confirm the warning
