@@ -28,7 +28,7 @@ VERSION     ?= 0.3.0
 RELEASE_ZIP := $(DIST)/$(APP_NAME)-$(VERSION).zip
 LATEST_ZIP  := $(DIST)/$(APP_NAME).zip
 
-.PHONY: all build bundle run clean install release sign-release appcast
+.PHONY: all build bundle run clean install release sign-release appcast stats
 
 all: bundle
 
@@ -82,3 +82,21 @@ sign-release:
 appcast:
 	@$(VENDOR_DIR)/bin/generate_appcast $(DIST) -o appcast.xml
 	@echo "Wrote appcast.xml"
+
+# Pull release download counts + repo traffic from the GitHub API.
+# Run ad-hoc ("make stats") to eyeball rough adoption — no analytics
+# backend, just whatever GitHub tells us.
+stats:
+	@echo "=== Release downloads ==="
+	@gh api /repos/logan-jg/claude-usage-monitor/releases \
+		--jq 'map({tag: .tag_name, total: (.assets | map(.download_count) | add)}) | .[] | "\(.tag)\t\(.total)"'
+	@echo
+	@echo "=== Traffic (last 14d) ==="
+	@gh api /repos/logan-jg/claude-usage-monitor/traffic/clones \
+		--jq '"clones: \(.count) total, \(.uniques) unique"'
+	@gh api /repos/logan-jg/claude-usage-monitor/traffic/views \
+		--jq '"views:  \(.count) total, \(.uniques) unique"'
+	@echo
+	@echo "=== Stars / watchers / forks ==="
+	@gh api /repos/logan-jg/claude-usage-monitor \
+		--jq '"stars: \(.stargazers_count), watchers: \(.subscribers_count), forks: \(.forks_count)"'
